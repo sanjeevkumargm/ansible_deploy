@@ -1,0 +1,6 @@
+---
+### Create tomcat Setup and installation directory
+- hosts: "{{ hosts | default('platform') }}"
+  gather_facts: false
+  roles:
+    - tomcat
