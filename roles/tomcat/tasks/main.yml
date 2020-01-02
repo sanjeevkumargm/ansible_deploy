@@ -134,24 +134,21 @@
 #    register: start_tomcat_server
 #    ignore_errors: yes
 
-  - name: Check that a page returns a status 
+  - name: Check connect to a page and it returns a status 200 
     uri:
       url: "{{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }}"
+      validate_certs: false
+      status_code: 200
     ignore_errors: yes
     register : start_tomcat_server
-    validate_certs: false
-    status_code: 200
     until: start_tomcat_server == 200
     retries: "{{ START_TOMCAT_SERVER_RETRIES }}"
     delay: "{{ START_TOMCAT_SERVER_DELAY_SECONDS }}"
 
   - debug:  
       msg: "Tomcat Server is started... Please check {{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }}"
-    when: start_tomcat_server.status == 200
-
-  - debug:
-      msg: " Tomcat Server is not started "
-    when: start_tomcat_server.status != 200  
+    when: start_tomcat_server is success
+    ignore_errors: yes
 
   rescue:
   - fail: 
