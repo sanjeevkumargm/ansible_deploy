@@ -1,0 +1,7 @@
+---
+#### Create Java Setup and Installation Directory
+- hosts: "{{ hosts | default('java') }}"
+  gather_facts: false
+  roles:
+    - java
+
