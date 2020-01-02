@@ -1,0 +1,31 @@
+---
+# vars file for ansible_role
+
+############### Variables for setup and installation directories ############
+
+## Setup HOME directory
+HOME_DIR: /home/ansible
+
+## Setup directory for tar files
+SETUP_DIR: "{{ HOME_DIR }}/setup"
+
+## Tomcat Installation directory
+TOMCAT_HOME_DIR: "{{ HOME_DIR }}/tomcat"
+
+## Java Installation directory
+JAVA_HOME_DIR: "{{ HOME_DIR }}/java"
+
+## Java tar file
+JAVA_URL: "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz"
+
+## Tomcat tar file
+TOMCAT_URL: "http://apachemirror.wuchna.com/tomcat/tomcat-9/v9.0.30/bin/apache-tomcat-9.0.30.tar.gz"
+
+## Java zip
+JAVA_ZIP: "{{ SETUP_DIR }}/OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz"
+
+## Tomcat zip
+TOMCAT_ZIP: "{{ SETUP_DIR }}/apache-tomcat-9.0.30.tar.gz"
+
+## Web Application deployment file
+DEPLOY_WAR: "sample.war"

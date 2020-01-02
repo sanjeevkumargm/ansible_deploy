@@ -1,0 +1,28 @@
+---
+# Vars file for tomcat                                                                                                                                                           
+### Setup HOME directory
+HOME_DIR: /home/ansible
+
+### Tomcat Installation directory
+TOMCAT_INSTALL_DIR: "{{ HOME_DIR }}/tomcat"
+
+# Tomcat tar file
+TOMCAT_URL: "http://apachemirror.wuchna.com/tomcat/tomcat-9/v9.0.30/bin/apache-tomcat-9.0.30.tar.gz"
+
+# Tomcat Protocol
+TOMCAT_PROTOCOL: http
+
+# Ansible Hostname
+ANSIBLE_HOSTNAME: localhost
+
+#Tomcat PORT
+TOMCAT_PORT: 8080
+
+#
+START_TOMCAT_SERVER_RETRIES: 10  # 720 * 5 seconds = 1hour (60*60/5)
+
+#
+START_TOMCAT_SERVER_DELAY_SECONDS: 5  # Every 5 seconds
+
+# Deploy file
+DEPLOY_WAR: "sample.war"

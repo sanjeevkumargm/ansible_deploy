@@ -1,0 +1,165 @@
+---
+# tasks file for tomcat
+
+######## Stop Tomcat ###############
+- name: Stop Tomcat Webserver
+  block:
+  - name: Check tomcat webserver is running 
+    uri:
+      url: "{{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }} "
+    register: tomcat_server
+    ignore_errors: yes
+ 
+  - debug:
+      msg: " Tomcat Server is running " 
+    when: tomcat_server.status == 200
+
+  - debug:
+      msg: "Tomcat server is not running"
+    when: tomcat_server.status != 200
+
+  - name: Stop Tomcat Server
+    shell: "sh shutdown.sh"
+    args:
+      chdir: "{{ TOMCAT_INSTALL_DIR }}/bin"
+    ignore_errors: yes
+
+  - debug: 
+      msg: "Stopped tomcat server"
+    when: tomcat_server.status == 200
+
+  rescue:
+  - fail:
+      msg: "Error stopping tomcat server on {{ TOMCAT_INSTALL_DIR }}"
+
+  tags: 
+    - never
+    - stop-tomcat
+    - install-tomcat
+    - delete-tomcat
+    - install-all
+
+######## Delete Tomcat ############### 
+- name: Delet tomcat
+  block:
+  - name: Check tomcat Installation directory
+    stat:
+      path: "{{ TOMCAT_INSTALL_DIR }}"
+    register: tomcat_result
+
+  - debug:
+      msg: " Tomcat is Installed. Deleting tomcat..."
+    when: tomcat_result.stat.exists == true
+
+  - debug:
+      msg: " Tomcat is not installed. Skipping... "
+    when: tomcat_result.stat.exists == false
+
+  - name: Delete tomcat
+    file:
+      path: "{{ TOMCAT_INSTALL_DIR }}"
+      state: absent
+
+  - debug:
+      msg: " Tomcat deleted successfully "
+    when: tomcat_result.stat.exists == true
+
+  rescue:
+  - fail:
+      msg: " Error on {{ TOMCAT_INSTALL_DIR }} deletion "
+
+  tags:
+    - never
+    - delete-tomcat
+    - install-all
+
+############### Tomcat Installation ################
+- name: Tomcat Installation
+  block:
+  - name: Check if tomcat is installed
+    stat:
+      path: "{{ TOMCAT_INSTALL_DIR }}"
+    register: tomcat_result
+
+  - debug:
+      msg: " Tomcat is installed. Skipping..."
+    when: tomcat_result.stat.exists == true
+
+  - debug: 
+      msg: " Tomcat is not installed. Installing..."
+    when: tomcat_result.stat.exists == false 
+
+  - name: Create tomcat Install directory
+    file :
+      path: "{{ TOMCAT_INSTALL_DIR }}"
+      state: directory
+
+  - name: Download and Extract Tomcat tar file
+    unarchive:
+      src: "{{ TOMCAT_URL }}"
+      dest: "{{ TOMCAT_INSTALL_DIR }}"
+      remote_src: true
+      extra_opts: [--strip-components=1]
+
+  - name: Deploy tar file
+    copy: 
+      src: "{{ DEPLOY_WAR }}"
+      dest: "{{ TOMCAT_INSTALL_DIR }}/webapps"
+
+  - debug: 
+      msg: " Tomcat installed successfully "
+    when: tomcat_result.stat.exists == false
+
+  rescue:
+  - fail:
+      msg: " Error on {{ TOMCAT_INSTALL_DIR }} installation " 
+
+  tags:
+    - never
+    - delete-tomcat
+    - install-tomcat
+    - install-all
+
+############## Start Tomcat #########################
+- name: Start Tomcat
+  block:
+  - name: Start Tomcat Server
+    shell: "nohup sh startup.sh run >> ../logs/appserver.log &"
+    args:
+      chdir: "{{ TOMCAT_INSTALL_DIR }}/bin"
+
+#  - name: Check tomcat webserver is running
+#    uri:
+#      url: "{{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }} "
+#    register: start_tomcat_server
+#    ignore_errors: yes
+
+  - name: Check that a page returns a status 
+    uri:
+      url: "{{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }}"
+    ignore_errors: yes
+    register : start_tomcat_server
+    validate_certs: false
+    status_code: 200
+    until: start_tomcat_server == 200
+    retries: "{{ START_TOMCAT_SERVER_RETRIES }}"
+    delay: "{{ START_TOMCAT_SERVER_DELAY_SECONDS }}"
+
+  - debug:  
+      msg: "Tomcat Server is started... Please check {{ TOMCAT_PROTOCOL }}://{{ ANSIBLE_HOSTNAME }}:{{ TOMCAT_PORT }}"
+    when: start_tomcat_server.status == 200
+
+  - debug:
+      msg: " Tomcat Server is not started "
+    when: start_tomcat_server.status != 200  
+
+  rescue:
+  - fail: 
+      msg: "Tomcat Server is not started "
+  
+  tags:
+    - never
+    - start-tomcat
+    - install-tomcat
+    - install-all 
+
